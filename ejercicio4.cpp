@@ -72,7 +72,7 @@ int main() {
         cin >> origen >> dest;
         grafo->agregarArista(origen, dest);
     }
-    bool *visitados = new bool[cantV + 1]{false}; // Corrección en la inicialización
+    bool *visitados = new bool[cantV + 1]{false}; 
     grafo->DFS(1, visitados);
     int cantDestinos;
     cin >> cantDestinos;

@@ -5,132 +5,204 @@
 
 using namespace std;
 
-const int INF = numeric_limits<int>::max();
+struct NodoListaInt
+{
+    int dato;
+    NodoListaInt *sig;
+    NodoListaInt(int v) : dato(v), sig(nullptr) {}
+};
+
+struct _cabezalColaInt
+{
+    NodoListaInt *ppio;
+    NodoListaInt *cola;
+    unsigned int cant;
+};
+
+typedef _cabezalColaInt *ColaInt;
+
+ColaInt crearColaInt()
+{
+    ColaInt nuevo = new _cabezalColaInt();
+    nuevo->ppio = NULL;
+    nuevo->cola = NULL;
+    nuevo->cant = 0;
+    return nuevo;
+}
+
+void encolar(ColaInt &c, int e)
+{
+    if (c->cant == 0)
+    {
+        c->ppio = c->cola = new NodoListaInt(e);
+    }
+    else
+    {
+        NodoListaInt *nuevo = new NodoListaInt(e);
+        c->cola->sig = nuevo;
+        c->cola = nuevo;
+    }
+    c->cant++;
+}
+
+int principio(ColaInt c)
+{
+    if (c->cant > 0)
+    {
+        return c->ppio->dato;
+    }
+    return 0;
+}
+
+void desencolar(ColaInt &c)
+{
+    if (c->cant > 0)
+    {
+        NodoListaInt *aBorrar = c->ppio;
+        c->ppio = c->ppio->sig;
+        if (c->ppio == nullptr)
+        {
+            c->cola = nullptr;
+        }
+        delete aBorrar;
+        c->cant--;
+    }
+}
+
+bool esVacia(ColaInt c)
+{
+    return (c->cant == 0);
+}
+
+unsigned int cantidadElementos(ColaInt c)
+{
+    return c->cant;
+}
+
+void destruir(ColaInt &c)
+{
+    while (!esVacia(c))
+    {
+        desencolar(c);
+    }
+    delete c;
+}
 
 struct NodoLista
 {
     int vertice;
-    int peso;
     NodoLista *sig;
-    NodoLista(int v, int p, NodoLista *n = nullptr) : vertice(v), peso(p), sig(n) {}
+    int peso;
+    NodoLista(int v, int p = 1, NodoLista *n = nullptr) : vertice(v), peso(p), sig(n) {}
 };
+
+typedef NodoLista *Lista;
 
 class GrafoListaAdy
 {
 private:
-    NodoLista **grafo;
+    Lista *lista;
     int V;
 
 public:
-    GrafoListaAdy(int cantV) : V(cantV)
+    GrafoListaAdy(int cantidadDeVertices)
     {
-        grafo = new NodoLista *[V + 1]();
+        V = cantidadDeVertices;
+        lista = new Lista[V + 1];
+        for (int i = 0; i <= V; i++)
+        {
+            lista[i] = nullptr;
+        }
     }
 
     ~GrafoListaAdy()
     {
-        for (int i = 1; i <= V; ++i)
+        for (int i = 0; i <= V; i++)
         {
-            NodoLista *temp = grafo[i];
-            while (temp != nullptr)
+            Lista actual = lista[i];
+            while (actual != nullptr)
             {
-                NodoLista *prev = temp;
-                temp = temp->sig;
-                delete prev;
+                Lista tmp = actual;
+                actual = actual->sig;
+                delete tmp;
             }
         }
-        delete[] grafo;
+        delete[] lista;
     }
 
-    void agregarArista(int v, int w, int peso = 1)
+    void agregarArista(int v, int w)
     {
-        grafo[v] = new NodoLista(w, peso, grafo[v]);
-        grafo[w] = new NodoLista(v, peso, grafo[w]); // Si el grafo es no dirigido
+        NodoLista *nuevoNodo = new NodoLista(w);
+        nuevoNodo->sig = lista[v];
+        lista[v] = nuevoNodo;
     }
 
-    int dijkstra(int origen)
+    int BFS(int inicial)
     {
-        int *distancia = new int[V + 1];
-        fill_n(distancia, V + 1, INF);
-        distancia[origen] = 0;
+        int res = 0;
+        ColaInt cola = crearColaInt();
+        bool *encolados = new bool[V + 1]{false};
+        int *distancia = new int[V + 1]{0}; // Inicializar las distancias en 0
+        encolados[inicial] = true;
+        encolar(cola, inicial);
 
-        bool *visitados = new bool[V + 1]();
-        for (int count = 0; count < V - 1; count++)
+        while (!esVacia(cola))
         {
-            int u = -1;
-            for (int i = 1; i <= V; i++)
-                if (!visitados[i] && (u == -1 || distancia[i] < distancia[u]))
-                    u = i;
-            visitados[u] = true;
+            int v = principio(cola);
+            desencolar(cola);
+            res += distancia[v]; // Sumar la distancia del nodo actual
 
-            NodoLista *temp = grafo[u];
-            while (temp != nullptr)
+            Lista aux = lista[v];
+            while (aux != nullptr)
             {
-                int v = temp->vertice;
-                int peso = temp->peso;
-                if (!visitados[v] && distancia[u] + peso < distancia[v])
+                if (!encolados[aux->vertice])
                 {
-                    distancia[v] = distancia[u] + peso;
+                    encolar(cola, aux->vertice);
+                    encolados[aux->vertice] = true;
+                    distancia[aux->vertice] = distancia[v] + 1; // Aumentar la distancia en 1
                 }
-                temp = temp->sig;
+                aux = aux->sig;
             }
         }
-
-        int maxDist = 0;
-        for (int i = 1; i <= V; i++)
-        {
-            if (distancia[i] != INF && distancia[i] > maxDist)
-            {
-                maxDist = distancia[i];
-            }
-        }
-        delete[] distancia;
-        delete[] visitados;
-        return maxDist;
     }
 };
 
 int main()
 {
-    int V;
-    cin >> V;
-    GrafoListaAdy *grafo = new GrafoListaAdy(V);
-    int caminos;
-    cin >> caminos;
-    bool *paradasImportantes = new bool[V + 1](); // Inicializa todos los elementos a false
-    for (int i = 0; i < caminos; i++)
+    int cantV, cantCaminos, origen, destino;
+    cin >> cantV;
+    GrafoListaAdy *grafo = new GrafoListaAdy(cantV);
+    int *vec = new int[cantV + 1]();
+    cin >> cantCaminos;
+    for (int i = 0; i < cantCaminos; i++)
     {
-        int origen, destino;
         cin >> origen;
-        while (true)
+        destino = -1; // entra al menos una vez al while
+        while (destino != 0)
         {
             cin >> destino;
             if (destino == 0)
+            {
                 break;
+            }
             grafo->agregarArista(origen, destino);
+            vec[origen]++; // cuento cuantas salidas tiene esta parada
+            vec[destino]++;
             origen = destino;
         }
     }
-
-    int res = -1;
-    int maxDist = -1;
-    for (int i = 1; i <= V; i++)
+    int max = 0;
+    for (int i = 1; i <= cantV; i++)
     {
-        if (paradasImportantes[i])
+        if (vec[i] > 2) // si es importante la parada
         {
-            int dijkstraCaminoLargo = grafo->dijkstra(i);
-            if (dijkstraCaminoLargo > maxDist)
-            {
-                maxDist = dijkstraCaminoLargo;
-                res = i;
-            }
+            int actual = grafo->BFS(i);
+            if (actual > max)
+                max = actual;
         }
     }
-
-    cout << "El fugitivo esta en " << res << endl;
-
-    delete[] paradasImportantes;
+    cout << max / cantV << endl;
+    delete[] vec;
     delete grafo;
-
     return 0;
 }
