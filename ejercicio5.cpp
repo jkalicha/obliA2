@@ -198,7 +198,7 @@ int main()
             origen = destino;
         }
     }
-    double minPromedio = numeric_limits<double>::max();
+    double minPromedio = 1000000000;
     int paradaFugitivo = -1;
     for (int i = 1; i <= cantV; i++)
     {
