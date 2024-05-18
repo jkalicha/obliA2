@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -32,13 +31,13 @@ ColaInt crearColaInt()
 
 void encolar(ColaInt &c, int e)
 {
+    NodoListaInt *nuevo = new NodoListaInt(e);
     if (c->cant == 0)
     {
-        c->ppio = c->cola = new NodoListaInt(e);
+        c->ppio = c->cola = nuevo;
     }
     else
     {
-        NodoListaInt *nuevo = new NodoListaInt(e);
         c->cola->sig = nuevo;
         c->cola = nuevo;
     }
@@ -72,11 +71,6 @@ void desencolar(ColaInt &c)
 bool esVacia(ColaInt c)
 {
     return (c->cant == 0);
-}
-
-unsigned int cantidadElementos(ColaInt c)
-{
-    return c->cant;
 }
 
 void destruir(ColaInt &c)
@@ -164,6 +158,48 @@ public:
                 aux = aux->sig;
             }
         }
+
+        delete[] encolados;
+        delete[] distancia;
+        destruir(cola);
+        return res;
+    }
+
+    int promedioDistancias(int inicial)
+    {
+        int sumaDistancias = 0;
+        int numVertices = 0;
+        ColaInt cola = crearColaInt();
+        bool *encolados = new bool[V + 1]{false};
+        int *distancia = new int[V + 1]{0}; // Inicializar las distancias en 0
+        encolados[inicial] = true;
+        encolar(cola, inicial);
+
+        while (!esVacia(cola))
+        {
+            int v = principio(cola);
+            desencolar(cola);
+            sumaDistancias += distancia[v]; // Sumar la distancia del nodo actual
+            numVertices++;
+
+            Lista aux = lista[v];
+            while (aux != nullptr)
+            {
+                if (!encolados[aux->vertice])
+                {
+                    encolar(cola, aux->vertice);
+                    encolados[aux->vertice] = true;
+                    distancia[aux->vertice] = distancia[v] + 1; // Aumentar la distancia en 1
+                }
+                aux = aux->sig;
+            }
+        }
+
+        delete[] encolados;
+        delete[] distancia;
+        destruir(cola);
+
+        return sumaDistancias / numVertices;
     }
 };
 
@@ -191,18 +227,23 @@ int main()
             origen = destino;
         }
     }
-    int max = 0;
+    int minPromedio = numeric_limits<int>::max();
+    int paradaFugitivo = -1;
     for (int i = 1; i <= cantV; i++)
     {
         if (vec[i] > 2) // si es importante la parada
         {
-            int actual = grafo->BFS(i);
-            if (actual > max)
-                max = actual;
+            int promedio = grafo->promedioDistancias(i);
+            if (promedio < minPromedio)
+            {
+                minPromedio = promedio;
+                paradaFugitivo = i;
+            }
         }
     }
-    cout << max / cantV << endl;
+    cout << "El fugitivo está en: " << paradaFugitivo << endl;
     delete[] vec;
     delete grafo;
     return 0;
 }
+
