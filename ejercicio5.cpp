@@ -129,9 +129,13 @@ public:
         NodoLista *nuevoNodo = new NodoLista(w);
         nuevoNodo->sig = lista[v];
         lista[v] = nuevoNodo;
+        // Como es un grafo no dirigido, agregamos también la arista en sentido opuesto
+        NodoLista *nuevoNodo2 = new NodoLista(v);
+        nuevoNodo2->sig = lista[w];
+        lista[w] = nuevoNodo2;
     }
 
-    int BFS(int inicial)
+    double BFS(int inicial)
     {
         int res = 0;
         ColaInt cola = crearColaInt();
@@ -140,47 +144,14 @@ public:
         encolados[inicial] = true;
         encolar(cola, inicial);
 
-        while (!esVacia(cola))
+        int totalVertices = 0;
+
+        while (!esVacia(cola) && totalVertices < V)
         {
             int v = principio(cola);
             desencolar(cola);
             res += distancia[v]; // Sumar la distancia del nodo actual
-
-            Lista aux = lista[v];
-            while (aux != nullptr)
-            {
-                if (!encolados[aux->vertice])
-                {
-                    encolar(cola, aux->vertice);
-                    encolados[aux->vertice] = true;
-                    distancia[aux->vertice] = distancia[v] + 1; // Aumentar la distancia en 1
-                }
-                aux = aux->sig;
-            }
-        }
-
-        delete[] encolados;
-        delete[] distancia;
-        destruir(cola);
-        return res;
-    }
-
-    int promedioDistancias(int inicial)
-    {
-        int sumaDistancias = 0;
-        int numVertices = 0;
-        ColaInt cola = crearColaInt();
-        bool *encolados = new bool[V + 1]{false};
-        int *distancia = new int[V + 1]{0}; // Inicializar las distancias en 0
-        encolados[inicial] = true;
-        encolar(cola, inicial);
-
-        while (!esVacia(cola))
-        {
-            int v = principio(cola);
-            desencolar(cola);
-            sumaDistancias += distancia[v]; // Sumar la distancia del nodo actual
-            numVertices++;
+            totalVertices++;
 
             Lista aux = lista[v];
             while (aux != nullptr)
@@ -199,7 +170,7 @@ public:
         delete[] distancia;
         destruir(cola);
 
-        return sumaDistancias / numVertices;
+        return double(res) / totalVertices; // Devolver el promedio de distancias
     }
 };
 
@@ -227,13 +198,13 @@ int main()
             origen = destino;
         }
     }
-    int minPromedio = numeric_limits<int>::max();
+    double minPromedio = numeric_limits<double>::max();
     int paradaFugitivo = -1;
     for (int i = 1; i <= cantV; i++)
     {
         if (vec[i] > 2) // si es importante la parada
         {
-            int promedio = grafo->promedioDistancias(i);
+            double promedio = grafo->BFS(i);
             if (promedio < minPromedio)
             {
                 minPromedio = promedio;
@@ -246,4 +217,5 @@ int main()
     delete grafo;
     return 0;
 }
+
 
