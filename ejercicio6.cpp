@@ -54,7 +54,7 @@ private:
         if (a->dist != b->dist)
             return a->dist < b->dist;
         if (a->estado != b->estado)
-            return a->estado > b->estado;
+            return a->estado < b->estado;
         if (a->flujo != b->flujo)
             return a->flujo > b->flujo;
         return a->id < b->id;
@@ -209,14 +209,18 @@ MinHeap *kruskal(int cantA, int cantV, MinHeap *aristas)
     int aceptadas = 0;
     while (!aristas->esVacio() || aceptadas < cantV - 1)
     {
+        //cout << "Entro al while" << endl;
+        //cout << "Aceptadas: " << aceptadas << endl;
         NodoArista *a = aristas->obtenerMinimo();
         if (mfset.find(a->origen) != mfset.find(a->dest))
         {
+            //cout << "Entro al if" << endl;
             mfset.merge(a->origen, a->dest);
             solucion->insertar(a);
             aceptadas++;
         }
     }
+    //cout << "Salio del while" << endl;
     return solucion;
 }
 
@@ -241,7 +245,7 @@ int main()
     MinHeap *resultado = kruskal(cantA, cantV, aristas);
     int sumaDist = 0;
     int promedioEstado = 0;
-    for (int i = 0; i < cantV - 1; i++)
+    for (int i = 0; i < (cantV - 1); i++)
     {
         NodoArista* min = resultado->obtenerMinimo();
         cout << min->origen << " " << min->dest << " " << min->id << " " 
@@ -249,7 +253,7 @@ int main()
         sumaDist += min->dist;
         promedioEstado += min->estado;
     }
-    promedioEstado = promedioEstado/cantV-1;
+    promedioEstado = promedioEstado/(cantV-1);
     cout << "Distancia total a reparar: " << sumaDist << endl;
     cout << "Estado promedio de las calles reparadas: " << promedioEstado << endl;
     return 0;
