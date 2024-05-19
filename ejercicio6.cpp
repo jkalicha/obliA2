@@ -5,6 +5,19 @@
 
 using namespace std;
 
+struct NodoArista
+{
+    int id;
+    int origen;
+    int dest;
+    int dist;
+    int flujo;
+    int estado;
+    NodoArista * sig;
+    NodoArista(int id, int origen, int dest, int dist, int flujo, int estado) 
+    : id(id), origen(origen), dest(dest), dist(dist), flujo(flujo), estado(estado), sig(NULL) {}
+};
+
 
 /*void kruskal() ​
 ColaPrioridad cp(); // imp. heap​
