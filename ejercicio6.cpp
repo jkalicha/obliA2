@@ -18,7 +18,7 @@ struct NodoArista
         : id(id), origen(origen), dest(dest), dist(dist), flujo(flujo), estado(estado), sig(NULL) {}
 };
 
-typedef NodoArista* Lista;
+typedef NodoArista *Lista;
 
 class MinHeap
 {
@@ -202,15 +202,17 @@ public:
     }
 };
 
-MinHeap* kruskal(int cantA, int cantV, MinHeap *aristas)
+MinHeap *kruskal(int cantA, int cantV, MinHeap *aristas)
 {
-    MinHeap * solucion = new MinHeap(cantA);
-    MFSet mfset(cantV+1);
+    MinHeap *solucion = new MinHeap(cantA);
+    MFSet mfset(cantV + 1);
     int aceptadas = 0;
-    while (!aristas->esVacio() || aceptadas < cantV-1){
-        NodoArista* a = aristas->obtenerMinimo();
-        if (mfset.find(a->origen) != mfset.find(a->dest)){
-            mfset.merge(a->origen,a->dest);
+    while (!aristas->esVacio() || aceptadas < cantV - 1)
+    {
+        NodoArista *a = aristas->obtenerMinimo();
+        if (mfset.find(a->origen) != mfset.find(a->dest))
+        {
+            mfset.merge(a->origen, a->dest);
             solucion->insertar(a);
             aceptadas++;
         }
@@ -220,6 +222,34 @@ MinHeap* kruskal(int cantA, int cantV, MinHeap *aristas)
 
 int main()
 {
-
+    int cantV, cantA;
+    cin >> cantV;
+    cin >> cantA;
+    MinHeap *aristas = new MinHeap(cantA);
+    int origen, destino, flujo, estado, dist, id;
+    for (int i = 0; i < cantA; i++)
+    {
+        cin >> origen;
+        cin >> destino;
+        cin >> id;
+        cin >> dist;
+        cin >> flujo;
+        cin >> estado;
+        NodoArista *nueva = new NodoArista(id, origen, destino, dist, flujo, estado);
+        aristas->insertar(nueva);
+    }
+    MinHeap *resultado = kruskal(cantA, cantV, aristas);
+    int sumaDist = 0;
+    int promedioEstado = 0;
+    for (int i = 0; i < cantV - 1; i++)
+    {
+        cout << resultado->obtenerMinimo()->origen << " " << resultado->obtenerMinimo()->dest << " " << resultado->obtenerMinimo()->id << " " 
+        << resultado->obtenerMinimo()->dist << " " << resultado->obtenerMinimo()->flujo << " " << resultado->obtenerMinimo()->estado << endl;
+        sumaDist += resultado->obtenerMinimo()->dist;
+        promedioEstado += resultado->obtenerMinimo()->estado;
+    }
+    promedioEstado = promedioEstado/cantV-1;
+    cout << "Distancia total a reparar: " << sumaDist << endl;
+    cout << "Estado promedio de las calles reparadas: " << promedioEstado << endl;
     return 0;
 }
