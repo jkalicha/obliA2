@@ -18,6 +18,8 @@ struct NodoArista
         : id(id), origen(origen), dest(dest), dist(dist), flujo(flujo), estado(estado), sig(NULL) {}
 };
 
+typedef NodoArista* Lista;
+
 class MinHeap
 {
 private:
@@ -200,26 +202,21 @@ public:
     }
 };
 
-/*void kruskal()
+MinHeap* kruskal(int cantA, int cantV, MinHeap *aristas)
 {
-    ColaPrioridad cp(); // imp. heap
-
-    insertarAristas(cp); // inserto todas las aristas del grafo
-    List<Arista> solucion(); // guardo las aristas que serán parte de la solución
-    MFset mfset(V+1); // Merge-Find Set de V+1 elementos
-    int aristasAceptadas = 0;
-
-    while(!cp.estaVacia() || aristasAceptadas < V-1)
-    {
-        Arista a = cp.pop(); // obtenemos la misma arista sin procesar
-        if(mfset.find(a.origen) != mfset.find(a.destino)) // !formaCiclo(solucion, a)
-        {
-            mfset.merge(a.origen, a.destino);
-            solucion.agregar(a);
-            aristasAceptadas++;
+    MinHeap * solucion = new MinHeap(cantA);
+    MFSet mfset(cantV+1);
+    int aceptadas = 0;
+    while (!aristas->esVacio() || aceptadas < cantV-1){
+        NodoArista* a = aristas->obtenerMinimo();
+        if (mfset.find(a->origen) != mfset.find(a->dest)){
+            mfset.merge(a->origen,a->dest);
+            solucion->insertar(a);
+            aceptadas++;
         }
     }
-}*/
+    return solucion;
+}
 
 int main()
 {
