@@ -5,7 +5,8 @@
 
 using namespace std;
 
-struct NodoArista {
+struct NodoArista
+{
     int id;
     int origen;
     int dest;
@@ -17,31 +18,37 @@ struct NodoArista {
         : id(id), origen(origen), dest(dest), dist(dist), flujo(flujo), estado(estado), sig(NULL) {}
 };
 
-class MinHeap {
+class MinHeap
+{
 private:
-    NodoArista** aristas;
+    NodoArista **aristas;
     int largo;
     int ultimoLibre;
 
-    int izq(int nodo) {
+    int izq(int nodo)
+    {
         return nodo * 2;
     }
 
-    int der(int nodo) {
+    int der(int nodo)
+    {
         return nodo * 2 + 1;
     }
 
-    int padre(int nodo) {
+    int padre(int nodo)
+    {
         return nodo / 2;
     }
 
-    void intercambiar(int x, int y) {
-        NodoArista* aux = aristas[x];
+    void intercambiar(int x, int y)
+    {
+        NodoArista *aux = aristas[x];
         aristas[x] = aristas[y];
         aristas[y] = aux;
     }
 
-    bool comparar(NodoArista* a, NodoArista* b) {
+    bool comparar(NodoArista *a, NodoArista *b)
+    {
         if (a->dist != b->dist)
             return a->dist < b->dist;
         if (a->estado != b->estado)
@@ -51,35 +58,44 @@ private:
         return a->id < b->id;
     }
 
-    void flotar(int nodo) {
-        if (nodo != 1) {
+    void flotar(int nodo)
+    {
+        if (nodo != 1)
+        {
             int posPadre = padre(nodo);
-            if (comparar(aristas[nodo], aristas[posPadre])) {
+            if (comparar(aristas[nodo], aristas[posPadre]))
+            {
                 intercambiar(nodo, posPadre);
                 flotar(posPadre);
             }
         }
     }
 
-    void hundir(int nodo) {
-        if (izq(nodo) < ultimoLibre) {  // Si tiene al menos un hijo
+    void hundir(int nodo)
+    {
+        if (izq(nodo) < ultimoLibre)
+        { // Si tiene al menos un hijo
             int posIzq = izq(nodo);
             int posDer = der(nodo);
             int hijoMenor = posIzq;
 
-            if (posDer < ultimoLibre && comparar(aristas[posDer], aristas[posIzq])) {
+            if (posDer < ultimoLibre && comparar(aristas[posDer], aristas[posIzq]))
+            {
                 hijoMenor = posDer;
             }
 
-            if (comparar(aristas[hijoMenor], aristas[nodo])) {
+            if (comparar(aristas[hijoMenor], aristas[nodo]))
+            {
                 intercambiar(hijoMenor, nodo);
                 hundir(hijoMenor);
             }
         }
     }
 
-    void insertarAux(NodoArista* nuevaArista) {
-        if (!estaLleno()) {
+    void insertarAux(NodoArista *nuevaArista)
+    {
+        if (!estaLleno())
+        {
             aristas[ultimoLibre] = nuevaArista;
             flotar(ultimoLibre);
             ultimoLibre++;
@@ -87,27 +103,33 @@ private:
     }
 
 public:
-    MinHeap(int tamanio) {
-        aristas = new NodoArista*[tamanio + 1];
+    MinHeap(int tamanio)
+    {
+        aristas = new NodoArista *[tamanio + 1];
         largo = tamanio;
         ultimoLibre = 1;
     }
 
-    ~MinHeap() {
+    ~MinHeap()
+    {
         delete[] aristas;
     }
 
-    bool esVacio() {
+    bool esVacio()
+    {
         return ultimoLibre == 1;
     }
 
-    bool estaLleno() {
+    bool estaLleno()
+    {
         return ultimoLibre == largo;
     }
 
-    NodoArista* obtenerMinimo() {
-        if (!esVacio()) {
-            NodoArista* ret = aristas[1];
+    NodoArista *obtenerMinimo()
+    {
+        if (!esVacio())
+        {
+            NodoArista *ret = aristas[1];
             aristas[1] = aristas[ultimoLibre - 1];
             ultimoLibre--;
             hundir(1);
@@ -116,34 +138,72 @@ public:
         return NULL;
     }
 
-    void imprimirHeap() {
-        cout << "Array: " << endl;
-        for (int i = 1; i < ultimoLibre; i++) {
-            cout << aristas[i]->id << " ";
-        }
-        cout << endl;
-        cout << "Arbol:" << endl;
-        int cantidadPorNivel = 1;
-        int impresosDelNivel = 0;
-        for (int i = 1; i < ultimoLibre; i++) {
-            cout << aristas[i]->id << " ";
-            impresosDelNivel++;
-            if (cantidadPorNivel == impresosDelNivel) {
-                cout << endl;
-                cantidadPorNivel *= 2;
-                impresosDelNivel = 0;
-            }
+    void insertar(NodoArista *nuevaArista)
+    {
+        this->insertarAux(nuevaArista);
+    }
+};
+
+class MFSet
+{
+    int *altura, *parent, n;
+
+public:
+    MFSet(int n)
+    {
+        parent = new int[n];
+        altura = new int[n];
+        this->n = n;
+        makeSet();
+    }
+
+    void makeSet()
+    {
+        for (int i = 0; i < n; i++)
+        {
+            parent[i] = i;
         }
     }
 
-    void insertar(NodoArista* nuevaArista) {
-        this->insertarAux(nuevaArista);
+    int find(int x)
+    {
+        if (parent[x] != x)
+        {
+            // aplanamos el arbol
+            parent[x] = find(parent[x]);
+        }
+        return parent[x];
+    }
+
+    void merge(int x, int y)
+    {
+        int xset = find(x);
+        int yset = find(y);
+        // si estan dentro del mismo set terminamos
+        if (xset == yset)
+            return;
+        // evitamos aumentar la altura del arbol
+        if (altura[xset] < altura[yset])
+        {
+            parent[xset] = yset;
+        }
+        else if (altura[xset] > altura[yset])
+        {
+            parent[yset] = xset;
+        }
+        // si ambas alturas con la misma usamos cualquiera y actualizamos la altura
+        else
+        {
+            parent[yset] = xset;
+            altura[xset] = altura[xset] + 1;
+        }
     }
 };
 
 /*void kruskal()
 {
     ColaPrioridad cp(); // imp. heap
+
     insertarAristas(cp); // inserto todas las aristas del grafo
     List<Arista> solucion(); // guardo las aristas que serán parte de la solución
     MFset mfset(V+1); // Merge-Find Set de V+1 elementos
