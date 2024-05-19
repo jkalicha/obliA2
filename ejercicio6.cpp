@@ -243,10 +243,11 @@ int main()
     int promedioEstado = 0;
     for (int i = 0; i < cantV - 1; i++)
     {
-        cout << resultado->obtenerMinimo()->origen << " " << resultado->obtenerMinimo()->dest << " " << resultado->obtenerMinimo()->id << " " 
-        << resultado->obtenerMinimo()->dist << " " << resultado->obtenerMinimo()->flujo << " " << resultado->obtenerMinimo()->estado << endl;
-        sumaDist += resultado->obtenerMinimo()->dist;
-        promedioEstado += resultado->obtenerMinimo()->estado;
+        NodoArista* min = resultado->obtenerMinimo();
+        cout << min->origen << " " << min->dest << " " << min->id << " " 
+        << min->dist << " " << min->flujo << " " << min->estado << endl;
+        sumaDist += min->dist;
+        promedioEstado += min->estado;
     }
     promedioEstado = promedioEstado/cantV-1;
     cout << "Distancia total a reparar: " << sumaDist << endl;
