@@ -1,168 +1,136 @@
 #include <cassert>
-#include <iostream>
 #include <string>
-
+#include <iostream>
+#include <limits>
 using namespace std;
 
-class AVL
-{
+class AVL {
 private:
     int dato;
-    int cant;
     AVL *izq;
     AVL *der;
     int alt;
 
-    int max(int a, int b)
-    {
+    int max(int a, int b) {
         return (a > b) ? a : b;
     }
 
-    int altura(AVL *raiz)
-    {
-        if (raiz == nullptr)
-            return 0;
-        return 1 + max(altura(raiz->izq), altura(raiz->der));
+    int altura(AVL *raiz) {
+        if (raiz == NULL) return 0;
+        return raiz->alt;
     }
 
-    int obtenerBalance(AVL *raiz)
-    {
-        if (raiz == nullptr)
-            return 0;
+    int obtenerBalance(AVL *raiz) {
+        if (raiz == NULL) return 0;
         return altura(raiz->izq) - altura(raiz->der);
     }
 
-    AVL *rotacionHoraria(AVL *A)
-    {
+    AVL *rotacionHoraria(AVL *A) {
         AVL *B = A->izq;
         AVL *T2 = B->der;
         B->der = A;
         A->izq = T2;
-        A->alt = altura(A);
-        B->alt = altura(B);
+        A->alt = 1 + max(altura(A->izq), altura(A->der));
+        B->alt = 1 + max(altura(B->izq), altura(B->der));
         return B;
     }
 
-    AVL *rotacionAntihoraria(AVL *A)
-    {
-        AVL *B = A->der;
-        AVL *T2 = B->izq;
-        B->izq = A;
-        A->der = T2;
-        A->alt = altura(A);
-        B->alt = altura(B);
-        return B;
+    AVL *rotacionAntihoraria(AVL *B) {
+        AVL *A = B->der;
+        AVL *T2 = A->izq;
+        A->izq = B;
+        B->der = T2;
+        B->alt = 1 + max(altura(B->izq), altura(B->der));
+        A->alt = 1 + max(altura(A->izq), altura(A->der));
+        return A;
     }
 
-    AVL *insertarAux(AVL *raiz, int valor)
-    {
-        if (raiz == nullptr)
-        {
-            return new AVL(valor);
+    AVL* insertarAux(AVL *raiz, int e) {
+        if (raiz == NULL) {
+            return new AVL(e);
         }
-        if (valor < raiz->dato)
-        {
-            raiz->izq = insertarAux(raiz->izq, valor);
-        }
-        else if (valor > raiz->dato)
-        {
-            raiz->der = insertarAux(raiz->der, valor);
-        }
-        else
-        {
-            raiz->cant++;
+        if (e < raiz->dato) {
+            raiz->izq = insertarAux(raiz->izq, e);
+        } else if (e > raiz->dato) {
+            raiz->der = insertarAux(raiz->der, e);
+        } else {
             return raiz;
         }
-
-        raiz->alt = altura(raiz);
+        raiz->alt = 1 + max(altura(raiz->izq), altura(raiz->der));
         int balance = obtenerBalance(raiz);
-
-        // Rotaciones para mantener el árbol balanceado
-        if (balance > 1 && valor < raiz->izq->dato)
-        {
+        if (balance > 1 && e < raiz->izq->dato) {
             return rotacionHoraria(raiz);
         }
-        if (balance < -1 && valor > raiz->der->dato)
-        {
+        if (balance < -1 && e > raiz->der->dato) {
             return rotacionAntihoraria(raiz);
         }
-        if (balance > 1 && valor > raiz->izq->dato)
-        {
+        if (balance > 1 && e > raiz->izq->dato) {
             raiz->izq = rotacionAntihoraria(raiz->izq);
             return rotacionHoraria(raiz);
         }
-        if (balance < -1 && valor < raiz->der->dato)
-        {
+        if (balance < -1 && e < raiz->der->dato) {
             raiz->der = rotacionHoraria(raiz->der);
             return rotacionAntihoraria(raiz);
         }
-
         return raiz;
     }
 
 public:
-    AVL(int valor) : dato(valor), cant(1), izq(nullptr), der(nullptr), alt(1) {}
+    AVL(int e) {
+        this->dato = e;
+        this->izq = NULL;
+        this->der = NULL;
+        this->alt = 1;
+    }
 
-    AVL *insertar(AVL *raiz, int dato)
-    {
+    AVL* insertar(AVL *raiz, int dato) {
         return insertarAux(raiz, dato);
     }
 
-    bool buscar(AVL *raiz, int buscado)
-    {
-        if (raiz == nullptr)
+    bool buscar(AVL *raiz, int buscado) {
+        if (raiz == NULL) {
             return false;
-        if (buscado < raiz->dato)
+        }
+        if (buscado < raiz->dato) {
             return buscar(raiz->izq, buscado);
-        else if (buscado > raiz->dato)
+        } if (buscado > raiz->dato) {
             return buscar(raiz->der, buscado);
-        return true;
-    }
-
-    int getCantidad(AVL *raiz, int buscado)
-    {
-        if (raiz == nullptr)
-            return 0;
-        if (buscado < raiz->dato)
-            return getCantidad(raiz->izq, buscado);
-        else if (buscado > raiz->dato)
-            return getCantidad(raiz->der, buscado);
-        return raiz->cant;
+        } else {
+            return true;
+        }
     }
 };
 
-int main()
-{
-    int N, M, K;
+int main() {
+    int N;
     cin >> N;
-    AVL *avlN = nullptr;
-    int temp;
-    for (int i = 0; i < N; i++)
-    {
-        cin >> temp;
-        if (avlN == nullptr)
-            avlN = new AVL(temp);
-        else
-            avlN = avlN->insertar(avlN, temp);
+    int* listaN = new int[N];
+    for (int i = 0; i < N; i++) {
+        cin >> listaN[i];
     }
+    int M;
     cin >> M;
-    int *listaM = new int[M];
-    for (int i = 0; i < M; i++)
-    {
-        cin >> listaM[i];
+    int temp;
+    cin >> temp;
+    AVL *avlM = new AVL(temp);
+    for (int i = 0; i < M - 1; i++) {
+        cin >> temp;
+        avlM = avlM->insertar(avlM, temp);
     }
+    int K;
     cin >> K;
     int contador = 0;
-    for (int i = 0; i < M; i++)
-    {
-        int complemento = K - listaM[i];
-        if (avlN && avlN->buscar(avlN,complemento))
-        {
-            contador += avlN->getCantidad(avlN,complemento);
+    for (int i = 0; i < N; i++) {
+        int buscador = (K - listaN[i]);
+        if (buscador < 0) {
+            continue;
+        } else {
+            if (avlM->buscar(avlM, buscador)) {
+                contador++;
+            }
         }
     }
     cout << contador << endl;
-    delete[] listaM;
-    delete avlN;
-    return 0;
+    delete[] listaN;
+    return contador;
 }
