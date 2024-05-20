@@ -14,8 +14,7 @@ struct NodoArista
     int flujo;
     int estado;
     NodoArista *sig;
-    NodoArista(int id, int origen, int dest, int dist, int flujo, int estado)
-        : id(id), origen(origen), dest(dest), dist(dist), flujo(flujo), estado(estado), sig(NULL) {}
+    NodoArista(int id, int origen, int dest, int dist, int flujo, int estado): id(id), origen(origen), dest(dest), dist(dist), flujo(flujo), estado(estado), sig(NULL) {}
 };
 
 typedef NodoArista *Lista;
@@ -23,7 +22,7 @@ typedef NodoArista *Lista;
 class MinHeap
 {
 private:
-    NodoArista **aristas;
+    Lista *aristas;
     int largo;
     int ultimoLibre;
 
@@ -60,34 +59,27 @@ private:
         return a->id < b->id;
     }
 
-    void flotar(int nodo)
-    {
-        if (nodo != 1)
-        {
+    void flotar(int nodo){
+        if (nodo != 1){
             int posPadre = padre(nodo);
-            if (comparar(aristas[nodo], aristas[posPadre]))
-            {
+            if (comparar(aristas[nodo], aristas[posPadre])){
                 intercambiar(nodo, posPadre);
                 flotar(posPadre);
             }
         }
     }
 
-    void hundir(int nodo)
-    {
-        if (izq(nodo) < ultimoLibre)
-        { // Si tiene al menos un hijo
+    void hundir(int nodo){
+        if (izq(nodo) < ultimoLibre){ // Si tiene al menos un hijo
             int posIzq = izq(nodo);
             int posDer = der(nodo);
             int hijoMenor = posIzq;
 
-            if (posDer < ultimoLibre && comparar(aristas[posDer], aristas[posIzq]))
-            {
+            if (posDer < ultimoLibre && comparar(aristas[posDer], aristas[posIzq])){
                 hijoMenor = posDer;
             }
 
-            if (comparar(aristas[hijoMenor], aristas[nodo]))
-            {
+            if (comparar(aristas[hijoMenor], aristas[nodo])){
                 intercambiar(hijoMenor, nodo);
                 hundir(hijoMenor);
             }
@@ -96,8 +88,7 @@ private:
 
     void insertarAux(NodoArista *nuevaArista)
     {
-        if (!estaLleno())
-        {
+        if (!estaLleno()){
             aristas[ultimoLibre] = nuevaArista;
             flotar(ultimoLibre);
             ultimoLibre++;
@@ -207,7 +198,7 @@ MinHeap *kruskal(int cantA, int cantV, MinHeap *aristas)
     MinHeap *solucion = new MinHeap(cantA);
     MFSet mfset(cantV + 1);
     int aceptadas = 0;
-    while (!aristas->esVacio() || aceptadas < cantV - 1)
+    while (!aristas->esVacio() || aceptadas < cantV - 1) //capaz va && en ves de ||
     {
         //cout << "Entro al while" << endl;
         //cout << "Aceptadas: " << aceptadas << endl;
@@ -220,6 +211,12 @@ MinHeap *kruskal(int cantA, int cantV, MinHeap *aristas)
             aceptadas++;
         }
     }
+    /* 
+    if(aceptadas < cantV - 1){
+        cout << "NO ES CONEXO. No se puede reparar la ciudad" << endl;
+        return NULL;
+    }
+    */
     //cout << "Salio del while" << endl;
     return solucion;
 }
@@ -256,5 +253,7 @@ int main()
     promedioEstado = promedioEstado/(cantV-1);
     cout << "Distancia total a reparar: " << sumaDist << endl;
     cout << "Estado promedio de las calles reparadas: " << promedioEstado << endl;
+    delete aristas;
+    delete resultado;
     return 0;
 }
