@@ -26,17 +26,19 @@ class MinheapVirus{
         }
 
         void intercambiar(int x, int y){
-            //completar
+            int temp = virus[x];
+            virus[x] = virus[y];
+            virus[y] = temp;
         }
         
-        bool comparar(int * x, int * y){
-            //completar
+        bool comparar(int x, int y){
+            return x < y;
         }
 
         void flotar(int nodo){
             if (nodo != 1){
                 int posPadre = padre(nodo);
-                if (comparar(aristas[nodo], aristas[posPadre])){
+                if (comparar(virus[nodo], virus[posPadre])){
                     intercambiar(nodo, posPadre);
                     flotar(posPadre);
                 }
@@ -49,25 +51,21 @@ class MinheapVirus{
                 int posDer = der(nodo);
                 int hijoMenor = posIzq;
 
-                if (posDer < ultimoLibre && comparar(aristas[posDer], aristas[posIzq])){
+                if (posDer < ultimoLibre && comparar(virus[posDer], virus[posIzq])){
                     hijoMenor = posDer;
                 }
 
-                if (comparar(aristas[hijoMenor], aristas[nodo])){
+                if (comparar(virus[hijoMenor], virus[nodo])){
                     intercambiar(hijoMenor, nodo);
                     hundir(hijoMenor);
                 }
             }
         }
 
-        void insertarAux(int virus){
-            //completar
-        }
-
     public:
         MinheapVirus(int tamanio){
-            int * virus = new int *[tamanio + 1];
-            largo = tamanio;
+            int * virus = new int [tamanio + 1];
+            largo = tamanio + 1;
             ultimoLibre = 1;
         }
 
@@ -83,16 +81,23 @@ class MinheapVirus{
             return ultimoLibre == largo;
         }
 
-        void insertar(int virus){
-            //completar
+        void insertar(int v) {
+            assert(!estaLleno());
+            virus[ultimoLibre] = v;
+            flotar(ultimoLibre);
+            ultimoLibre++;
         }
 
-        int obtenerMinimo(){
-            //completar
+        int obtenerMinimo() {
+            assert(!esVacio());
+            return virus[1];
         }
 
         void eliminarTope(){
-            //completar
+            assert(!esVacio());
+            this->virus[1] = this->virus[ultimoLibre - 1];
+            this->ultimoLibre--;
+            hundir(1);
         }
 };
 
@@ -101,7 +106,7 @@ int main(){
     cin >> potencia;
     int N;
     cin >> N;
-    MinheapVirus * virusMinHeap = new MinheapVirus[N];
+    MinheapVirus * virusMinHeap = new MinheapVirus(N);
     for (int i = 0; i < N; i++){
         int v;
         cin >> v;
@@ -112,9 +117,13 @@ int main(){
             potencia += virusMinHeap->obtenerMinimo();
             virusMinHeap->eliminarTope();
         }else{
-            return false;
+            cout << "false" << endl;
+            // return false;
+            return 0;
         }
         
     }
-    return true;
+    cout << "true" << endl;
+    // return true;
+    return 0;
 }
