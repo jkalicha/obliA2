@@ -5,6 +5,9 @@
 
 using namespace std;
 
+//aplicar minHeap
+//tengo que ordenar el vector de virus e insertarlo en el minHeap
+
 int main()
 {
     int potencia;
