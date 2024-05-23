@@ -112,7 +112,6 @@ int main(){
         cin >> v;
         if (v <= potencia){
             potencia += v;
-        
         }
         else {
             virusMinHeap->insertar(v);
