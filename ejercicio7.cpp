@@ -110,7 +110,13 @@ int main(){
     for (int i = 0; i < N; i++){
         int v;
         cin >> v;
-        virusMinHeap->insertar(v);
+        if (v <= potencia){
+            potencia += v;
+        
+        }
+        else {
+            virusMinHeap->insertar(v);
+        }
     }
     while (!virusMinHeap->esVacio()){
         if(virusMinHeap->obtenerMinimo() <= potencia){
