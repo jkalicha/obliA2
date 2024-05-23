@@ -5,13 +5,11 @@
 
 using namespace std;
 
-//aplicar minHeap
-//tengo que ordenar el vector de virus e insertarlo en el minHeap
 class MinheapVirus{
     private:
         int * virus;
         int largo;
-        int ultimoLibre;
+        int primerlibre;
 
         int izq(int nodo){
             return nodo * 2;
@@ -32,13 +30,13 @@ class MinheapVirus{
         }
         
         bool comparar(int x, int y){
-            return x < y;
+            return virus[x] < virus[y];
         }
 
         void flotar(int nodo){
             if (nodo != 1){
                 int posPadre = padre(nodo);
-                if (comparar(virus[nodo], virus[posPadre])){
+                if (comparar(nodo, posPadre)){
                     intercambiar(nodo, posPadre);
                     flotar(posPadre);
                 }
@@ -46,16 +44,16 @@ class MinheapVirus{
         }
 
         void hundir(int nodo){
-            if (izq(nodo) < ultimoLibre){ // Si tiene al menos un hijo
+            if (izq(nodo) < primerlibre){ // Si tiene al menos un hijo
                 int posIzq = izq(nodo);
                 int posDer = der(nodo);
                 int hijoMenor = posIzq;
 
-                if (posDer < ultimoLibre && comparar(virus[posDer], virus[posIzq])){
+                if (posDer < primerlibre && comparar(posDer, posIzq)){
                     hijoMenor = posDer;
                 }
 
-                if (comparar(virus[hijoMenor], virus[nodo])){
+                if (comparar(hijoMenor, nodo)){
                     intercambiar(hijoMenor, nodo);
                     hundir(hijoMenor);
                 }
@@ -64,9 +62,9 @@ class MinheapVirus{
 
     public:
         MinheapVirus(int tamanio){
-            int * virus = new int [tamanio + 1];
+            virus = new int [tamanio + 1];
             largo = tamanio + 1;
-            ultimoLibre = 1;
+            primerlibre = 1;
         }
 
         ~MinheapVirus(){
@@ -74,18 +72,18 @@ class MinheapVirus{
         }
 
         bool esVacio(){
-            return ultimoLibre == 1;
+            return primerlibre == 1;
         }
 
         bool estaLleno(){
-            return ultimoLibre == largo;
+            return primerlibre == largo;
         }
 
         void insertar(int v) {
             assert(!estaLleno());
-            virus[ultimoLibre] = v;
-            flotar(ultimoLibre);
-            ultimoLibre++;
+            virus[primerlibre] = v;
+            flotar(primerlibre);
+            primerlibre++;
         }
 
         int obtenerMinimo() {
@@ -95,8 +93,8 @@ class MinheapVirus{
 
         void eliminarTope(){
             assert(!esVacio());
-            this->virus[1] = this->virus[ultimoLibre - 1];
-            this->ultimoLibre--;
+            this->virus[1] = this->virus[primerlibre - 1];
+            this->primerlibre--;
             hundir(1);
         }
 };
@@ -124,11 +122,12 @@ int main(){
         }else{
             cout << "false" << endl;
             // return false;
+            delete virusMinHeap;
             return 0;
         }
-        
     }
     cout << "true" << endl;
     // return true;
+    delete virusMinHeap;
     return 0;
 }
