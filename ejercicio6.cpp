@@ -99,7 +99,7 @@ public:
     MinHeap(int tamanio)
     {
         aristas = new NodoArista *[tamanio + 1];
-        largo = tamanio;
+        largo = tamanio + 1;
         ultimoLibre = 1;
     }
 
