@@ -1,78 +1,46 @@
-#include <cassert>
-#include <string>
 #include <iostream>
-#include <limits>
-
 using namespace std;
 
-// es un problema trivial cuando hay menos de 3 elementos
-bool esSolucionTrivial(int n){
-	return n <= 2;
-}
-
-int solucionTrivial(int *vector)
-{
-	return vector[0];
-}
-
-int * dividir(int * vector, int inicio, int fin){
-	int tamanioProblema = (fin - inicio) + 1;
-	int * problema = new int[tamanioProblema];
-	for (int i = 0; i < tamanioProblema; i++)
-	{
-		problema[i] = vector[inicio + i];
-	}
-	return problema;
-}
-
-// combinar es una funcion que toma dos soluciones y devuelve una
-// se fija si se repite la solucion en ambos lados, si se repite y es la unica en ambas, la devuelve.
-// si se repite y no es la unica, la solucion es la que no se repite.
-// si solo encuentra una solucion en ambos lados, la devuelve.
-int combinar(int*a, int*b) {
-	if (a[0] == b[0]){ //encontro una solucion en ambos lados
-        if (a[1] != -1) return a[1]; // Encontro dos soluciones en a, y la primera no es.
-        if (b[1] != -1) return b[1]; 
-        else return a[0];
-    }
-    if (a[0] == b[1]){ //encontro una solucion en ambos lados
-        return b[0]; //encontro dos soluciones en b
-    }
-    if (a[1] == b[0]){
-        return a[0];
-    }
-    if (a[0] == -1){
-        return b[0];
-    }
-    if (b[0] == -1){
-        return a[0];
+int encontrarUnico(int arr[], int low, int high) {
+    if (low > high) {
+        return -1;
     }
 
+    if (low == high) {
+        return arr[low];
+    }
+
+    int mid = low + (high - low) / 2;
+
+    // Para que la división y el cálculo de posiciones sea correcto, ajustamos mid a la izquierda más cercana donde mid % 3 == 0
+    if (mid % 3 == 1) {
+        mid--;
+    } else if (mid % 3 == 2) {
+        mid -= 2;
+    }
+
+    // Si mid es el inicio de un triplete
+    if (mid + 2 <= high && arr[mid] == arr[mid + 1] && arr[mid] == arr[mid + 2]) {
+        // El número único está a la derecha de este triplete
+        return encontrarUnico(arr, mid + 3, high);
+    } else {
+        // El número único está a la izquierda de este triplete (incluyendo mid)
+        return encontrarUnico(arr, low, mid);
+    }
 }
 
-int DivideAndConquer(int * vector, int n){
-	if (esSolucionTrivial(n))	return solucionTrivial(vector);
+int main() {
+    int N;
+    cin >> N;
 
-	int inicio = 0;
-	int fin = n - 1;
-	int medio =  fin / 2;
+    int* arr = new int[N];
+    for (int i = 0; i < N; ++i) {
+        cin >> arr[i];
+    }
 
-	int *problemaIzq = dividir(vector, inicio, medio);
-	int tamIzq = (medio - inicio) + 1;
-	int *problemaDer = dividir(vector, medio + 1, fin);
-	int tamDer = fin - (medio + 1) + 1;
+    int result = encontrarUnico(arr, 0, N - 1);
+    cout << result << endl;
 
-	int solucionIzquierda = DivideAndConquer(problemaIzq, tamIzq);
-	int solucionDerecha = DivideAndConquer(problemaDer, tamDer);
-
-	return combinar(solucionIzquierda, solucionDerecha);	
-}
-
-int main()
-{
-    int cant;
-    cin >> cant;
-    int * numeros = new int[cant];
-
+    delete[] arr;
     return 0;
 }
