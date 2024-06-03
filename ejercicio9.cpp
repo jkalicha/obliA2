@@ -40,6 +40,7 @@ using namespace std;
 
     //preguntar como resolver el ejercicio despues de obtener los primos.
     //como obtener todas las combinaciones posibles de llegar de una esquina a la otra
+    //acordarse de usar long long
 
 int main()
 {
