@@ -48,9 +48,28 @@ int main()
     int y;	
     cin >> x;
     cin >> y;
+    //encontramos los primos
+    int* primosFila = esPrimoEratostenes(x);
+    int* primosCol = esPrimoEratostenes(y);
+    //inicializamos la matriz
+    int ** mat = new int*[y];
+    for (int i=0; i<y; i++){
+        mat[i] = new int[x];
+    }
+    int actual = 0;
+    //dibujamos la matriz
+    for (int i = 0; i<x; i++){
+        for (int j=0; j<y; j++){
+            if (j == 0 && i == 0){
+                mat[i][j] = 1;
+            }
+            if (i-primosFila[actual]>=0){
+                mat[i][j] += mat[i-primosFila[actual]]; 
+            }
+            actual++;
 
-    int* primos = esPrimoEratostenes(maximo(x,y));
-
+        }
+    }
 
     return 0;
 }
