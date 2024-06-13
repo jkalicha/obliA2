@@ -146,12 +146,10 @@ class tablaPed{
             }
             else{
                 Pedido *pedido = this->array[pos];
-                if (pedido->entregado)
-                {
+                if (pedido->entregado){
                     cout << "Entregado" << endl;
                 }
-                else
-                {
+                else{
                     cout << pedido->elementos << endl;
                 }
             }
