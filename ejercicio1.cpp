@@ -5,181 +5,168 @@
 
 using namespace std;
 
-struct Pedido{
-    string elementos;
+struct Pedido
+{
+    string elem;
+    int id;
     bool entregado;
-    int key;
-
-    Pedido() : entregado(false) {}
 };
 
-class tablaPed{
-    private:
-        Pedido **array;
-        int tamanio;
-        int cantPedidos;
+struct NodoLista
+{
+    Pedido ped;
+    NodoLista *sig;
 
-        int fnHash(int clave, int tamanio){
-            return clave % tamanio;
-        }
-
-        int obtenerPos(int clave, int tamanio){
-            int i = 1;
-            int pos = fnHash(clave, tamanio);
-            while (this->array[pos] != NULL && i <= tamanio){
-                pos = fnHash(pos + i ^ 32, tamanio);
-                i++;
-            }
-            return pos;
-        }
-
-        int buscarPedido(int clave){
-            int i = 1;
-            int pos = fnHash(clave, this->tamanio);
-            while (i <= this->tamanio && (this->array[pos] == nullptr || this->array[pos]->key != clave)){  
-                pos = fnHash(pos + i ^ 32, this->tamanio);
-                i++;
-            }
-            if (this->array[pos] == nullptr || this->array[pos]->key != clave){
-                return -1;
-            }
-            return pos;
-        }
-
-        float factorDeCarga(){
-            return (float)this->cantPedidos / this->tamanio;
-        }
-
-        void actualizarPedido(int clave, string elementos){
-            int pedidoAnterior = buscarPedido(clave);
-            if (pedidoAnterior != -1)
-                this->array[pedidoAnterior]->elementos = elementos;
-        }
-
-        bool esPrimo(int num){
-            if (num <= 1){
-                return false;
-            }
-            for (int i = 2; i * i <= num; ++i){
-                if (num % i == 0){
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        int siguientePrimo(int N){
-            int siguiente = N + 1;
-            while (true){
-                if (esPrimo(siguiente)){
-                    return siguiente;
-                }
-                siguiente++;
-            }
-        }
-
-        void rehash(){
-            //int nuevo_tamanio = siguientePrimo(tamanio);
-            int nuevo_tamanio = tamanio*2;
-            Pedido **nuevo_array = new Pedido *[nuevo_tamanio]();
-            for (int i = 0; i < tamanio; ++i){
-                if (array[i] != NULL){
-                    int pos = obtenerPos(array[i]->key, nuevo_tamanio);
-                    nuevo_array[pos] = array[i];
-                }
-            }
-            delete[] array;
-            this->array = nuevo_array;
-            this->tamanio = nuevo_tamanio;
-        }
-
-        void destruir(){
-            for (int i = 0; i < this->tamanio; ++i){
-                if (this->array[i] != nullptr){
-                    delete array[i];
-                    this->array[i] = nullptr;
-                }
-            }
-            delete[] array;
-        }
-
-    public:
-        tablaPed(int tamanioInicial){
-            this->tamanio = this->siguientePrimo(tamanioInicial);
-            this->cantPedidos = 0;
-            this->array = new Pedido *[this->tamanio]();
-        }
-
-        ~tablaPed(){
-            destruir();
-        }
-
-        void agregarPedido(int id, string elementos){
-            int pos = buscarPedido(id);
-            if (pos != -1){ // Si el pedido ya existe
-                actualizarPedido(id, elementos);
-            }
-            else{                                        
-                // Si no existe, agregamos un nuevo pedido
-                pos = obtenerPos(id, this->tamanio); // Recalcular posición para un nuevo pedido
-                Pedido *pedido = new Pedido();
-                pedido->elementos = elementos;
-                pedido->key = id;
-                this->array[pos] = pedido;
-                this->cantPedidos++;
-                if (factorDeCarga() > 0.75)
-                    rehash();
-            }
-        }
-
-        void marcarEntregado(int ID){
-            int pos = buscarPedido(ID);
-            if (pos != -1 && this->array[pos]->key == ID){
-                this->array[pos]->entregado = true;
-            }
-        }
-
-        void consultarPedido(int ID){
-            int pos = buscarPedido(ID);
-            if (pos == -1){
-                cout << "Pedido no encontrado" << endl;
-            }
-            else{
-                Pedido *pedido = this->array[pos];
-                if (pedido->entregado){
-                    cout << "Entregado" << endl;
-                }
-                else{
-                    cout << pedido->elementos << endl;
-                }
-            }
-        }
+    NodoLista(Pedido pedido, NodoLista *siguiente = NULL)
+        : ped(pedido), sig(siguiente) {}
 };
 
-int main(){
+class TablaHashAbierta
+{
+private:
+    NodoLista **tabla;
+    int tamanio;
+    int cantPedidos;
+
+    int fnHash(int key, int tam)
+    {
+        return key % tam;
+    }
+
+    void rehash()
+    {
+        int nuevoTamanio = this->tamanio * 2;
+        NodoLista **nuevaTabla = new NodoLista*[nuevoTamanio]();
+        
+        for (int i = 0; i < this->tamanio; ++i)
+        {
+            NodoLista *nodo = this->tabla[i];
+            while (nodo)
+            {
+                NodoLista *siguiente = nodo->sig;
+                int nuevaPos = fnHash(nodo->ped.id, nuevoTamanio);
+                nodo->sig = nuevaTabla[nuevaPos];
+                nuevaTabla[nuevaPos] = nodo;
+                nodo = siguiente;
+            }
+        }
+
+        delete[] this->tabla;
+        this->tabla = nuevaTabla;
+        this->tamanio = nuevoTamanio;
+    }
+
+    float factorDeCarga()
+    {
+        return (float)this->cantPedidos / this->tamanio;
+    }
+
+public:
+    TablaHashAbierta(int cant)
+    {
+        this->tamanio = cant;
+        this->cantPedidos = 0;
+        this->tabla = new NodoLista*[this->tamanio]();
+    }
+
+    void insertarEnTablaHash(Pedido *pedido)
+    {
+        int pos = abs(this->fnHash(pedido->id, this->tamanio));
+        Pedido* ped = buscarEnLista(pos,pedido->id);
+        if (ped)
+        {
+            ped->elem = pedido->elem;
+            ped->entregado = false;
+        }
+        else
+        {
+            NodoLista *aux = new NodoLista(*pedido, tabla[pos]);
+            tabla[pos] = aux;
+            this->cantPedidos++;
+        }
+        if (this->factorDeCarga() > 0.7)
+            this->rehash();
+    }
+
+    Pedido* buscarEnLista(int index, int id)
+    {
+        NodoLista *nodo = this->tabla[index];
+        while (nodo)
+        {
+            if (nodo->ped.id == id)
+            {
+                return &nodo->ped;
+            }
+            nodo = nodo->sig;
+        }
+        return NULL;
+    }
+
+    void actualizarPedido(int id)
+    {
+        int index = fnHash(id, this->tamanio);
+        Pedido *pedido = buscarEnLista(index, id);
+        if (pedido)
+        {
+            pedido->entregado = true;
+        }
+    }
+
+    void consultarPedido(int id)
+    {
+        int index = fnHash(id, this->tamanio);
+        Pedido *pedido = buscarEnLista(index, id);
+        if (pedido)
+        {
+            if (pedido->entregado)
+            {
+                cout << "Entregado" << endl;
+            }
+            else
+            {
+                cout << pedido->elem << endl;
+            }
+        }
+        else
+        {
+            cout << "Pedido no encontrado" << endl;
+        }
+    }
+};
+
+int main()
+{
     int cantOp;
     cin >> cantOp;
-    tablaPed *mitabla = new tablaPed(cantOp);
-    while (cantOp > 0) {
+    TablaHashAbierta *mitabla = new TablaHashAbierta(cantOp);
+    while (cantOp > 0)
+    {
         string accion;
         cin >> accion;
-        if (accion == "A"){
+        if (accion == "A")
+        {
             int id;
             cin >> id;
             string elementos;
+            cin.ignore();
             getline(cin, elementos);
-            elementos.erase(0, 1);
-            mitabla->agregarPedido(id, elementos);
+            Pedido* ped = new Pedido();
+            ped->elem = elementos;
+            ped->id = id;
+            ped->entregado = false;
+            mitabla->insertarEnTablaHash(ped);
         }
-        else if (accion == "E"){
-            int Id;
-            cin >> Id;
-            mitabla->marcarEntregado(Id);
+        else if (accion == "E")
+        {
+            int id;
+            cin >> id;
+            mitabla->actualizarPedido(id);
         }
-        else if (accion == "Q"){
-            int Id;
-            cin >> Id;
-            mitabla->consultarPedido(Id);
+        else if (accion == "Q")
+        {
+            int id;
+            cin >> id;
+            mitabla->consultarPedido(id);
         }
         cantOp--;
     }
